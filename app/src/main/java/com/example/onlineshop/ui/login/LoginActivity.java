@@ -4,12 +4,11 @@ import android.app.Activity;
 
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.text.Editable;
@@ -24,15 +23,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.onlineshop.R;
-import com.example.onlineshop.ui.login.LoginViewModel;
-import com.example.onlineshop.ui.login.LoginViewModelFactory;
+import com.example.onlineshop.common.Const;
+import com.example.onlineshop.data.model.UserVO;
+import com.example.onlineshop.ui.home.HomeActivity;
+import com.example.onlineshop.utils.SharedPreferencesUtil;
+
+import okhttp3.internal.Util;
+
 
 public class LoginActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         loginViewModel =new ViewModelProvider(this, new LoginViewModelFactory()).get(LoginViewModel.class);
@@ -70,11 +74,26 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
+
+                    // 登录成功，保存登录数据
+                    SharedPreferencesUtil sharedPreferencesUtil = SharedPreferencesUtil.getInstance(LoginActivity.this);
+                    sharedPreferencesUtil.putBoolean(Const.SHARED_LOGIN, true);
+                    sharedPreferencesUtil.putObject(Const.SHARED_USER, loginResult.getSuccess());
+
+                    // 跳转页面
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                    LoginActivity.this.startActivity(intent);
+                    setResult(Activity.RESULT_OK);
+
+
+                    // 跳转完毕后，该activity出栈
+                    finish();
                 }
-                setResult(Activity.RESULT_OK);
+
 
                 //Complete and destroy login activity once successful
-                finish();
+
+
             }
         });
 
@@ -113,19 +132,27 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        loginViewModel.login(usernameEditText.getText().toString(),
+                                passwordEditText.getText().toString());
+                    }
+                }.start();
+
             }
         });
     }
 
-    private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
+    private void updateUiWithUser(UserVO model) {
+        String welcome = getString(R.string.welcome) + model.getUsername();
         // TODO : initiate successful logged in experience
         Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
     }
 
-    private void showLoginFailed(@StringRes Integer errorString) {
+    private void showLoginFailed(String errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
     }
 }

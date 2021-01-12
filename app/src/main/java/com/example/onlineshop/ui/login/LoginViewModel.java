@@ -4,11 +4,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import android.os.Looper;
 import android.util.Patterns;
 
 import com.example.onlineshop.data.LoginRepository;
 import com.example.onlineshop.data.Result;
-import com.example.onlineshop.data.model.LoggedInUser;
+import com.example.onlineshop.data.model.UserVO;
 import com.example.onlineshop.R;
 
 public class LoginViewModel extends ViewModel {
@@ -31,13 +32,15 @@ public class LoginViewModel extends ViewModel {
 
     public void login(String username, String password) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username, password);
+        Result<UserVO> result = loginRepository.login(username, password);
 
         if (result instanceof Result.Success) {
-            LoggedInUser data = (( Result.Success<LoggedInUser> ) result).getData();
-            loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+            UserVO data = (( Result.Success<UserVO> ) result).getData();
+
+            // 使用子线程更新Lifedata时，使用post方法
+            loginResult.postValue(new LoginResult(data));
         } else {
-            loginResult.setValue(new LoginResult(R.string.login_failed));
+            loginResult.postValue(new LoginResult(((Result.Error) result).getMsg()));
         }
     }
 
@@ -65,6 +68,6 @@ public class LoginViewModel extends ViewModel {
 
     // A placeholder password validation check
     private boolean isPasswordValid(String password) {
-        return password != null && password.trim().length() > 5;
+        return password != null && password.trim().length() > 2;
     }
 }

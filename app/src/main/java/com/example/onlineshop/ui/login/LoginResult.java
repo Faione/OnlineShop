@@ -2,30 +2,33 @@ package com.example.onlineshop.ui.login;
 
 import androidx.annotation.Nullable;
 
+import com.example.onlineshop.data.model.UserVO;
+
 /**
  * Authentication result : success (user details) or error message.
  */
 class LoginResult {
     @Nullable
-    private LoggedInUserView success;
+    private UserVO success;
     @Nullable
-    private Integer error;
+    private String error;
 
-    LoginResult(@Nullable Integer error) {
+    LoginResult(@Nullable String error) {
         this.error = error;
     }
 
-    LoginResult(@Nullable LoggedInUserView success) {
+
+    LoginResult(@Nullable UserVO success) {
         this.success = success;
     }
 
     @Nullable
-    LoggedInUserView getSuccess() {
+    UserVO getSuccess() {
         return success;
     }
 
     @Nullable
-    Integer getError() {
+    String getError() {
         return error;
     }
 }
