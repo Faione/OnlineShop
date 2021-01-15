@@ -28,8 +28,6 @@ import com.example.onlineshop.data.model.UserVO;
 import com.example.onlineshop.ui.home.HomeActivity;
 import com.example.onlineshop.utils.SharedPreferencesUtil;
 
-import okhttp3.internal.Util;
-
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -74,11 +72,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
-
-                    // 登录成功，保存登录数据
-                    SharedPreferencesUtil sharedPreferencesUtil = SharedPreferencesUtil.getInstance(LoginActivity.this);
-                    sharedPreferencesUtil.putBoolean(Const.SHARED_LOGIN, true);
-                    sharedPreferencesUtil.putObject(Const.SHARED_USER, loginResult.getSuccess());
+                    savaUser(loginResult);
 
                     // 跳转页面
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
@@ -144,6 +138,13 @@ public class LoginActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void savaUser(@Nullable LoginResult loginResult) {
+        // 登录成功，保存登录数据
+        SharedPreferencesUtil sharedPreferencesUtil = SharedPreferencesUtil.getInstance(LoginActivity.this);
+        sharedPreferencesUtil.putBoolean(Const.SHARED_LOGIN, true);
+        sharedPreferencesUtil.putObject(Const.SHARED_USER, loginResult.getSuccess());
     }
 
     private void updateUiWithUser(UserVO model) {
